@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery | Sri Sai Krishna Graphics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="page-gallery">
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="logo">Sri Sai Krishna Graphics</div>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="gallery.html" class="active">Gallery</a></li>
+        <li><a href="wholesale.html">Wholesale</a></li>
+        <li><a href="shop.html">Shop</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="btn-icon" onclick="openAuthModal()" aria-label="Sign In"><i class="ph-bold ph-user-circle"></i></button>
+        <button class="btn-icon" onclick="toggleSettings()" aria-label="Settings"><i class="ph-bold ph-gear"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section>
+      <div class="section-header">
+        <h2>Our Past Work</h2>
+        <p>Take a look at some of the beautiful custom prints and frames we have crafted.</p>
+      </div>
+      <div class="gallery-grid">
+        <div class="gallery-item"><img src="https://images.pexels.com/photos/10398321/pexels-photo-10398321.jpeg?auto=compress&cs=tinysrgb&w=800" alt="T-Shirt"><div class="gallery-overlay"><h4>Custom Event T-Shirts</h4></div></div>
+        <div class="gallery-item"><img src="https://images.pexels.com/photos/3321319/pexels-photo-3321319.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Frames"><div class="gallery-overlay"><h4>Premium Wooden Frames</h4></div></div>
+        <div class="gallery-item"><img src="https://images.pexels.com/photos/8947321/pexels-photo-8947321.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Mugs"><div class="gallery-overlay"><h4>Wholesale Printed Mugs</h4></div></div>
+        <div class="gallery-item"><img src="https://images.pexels.com/photos/10113063/pexels-photo-10113063.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Lamp"><div class="gallery-overlay"><h4>Personalized Gifts</h4></div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-content">
+      <div class="brand-info">
+        <h3>Sri Sai Krishna Graphics</h3>
+        <p><strong>Location:</strong> Main road, Maripeda Bangla, Telangana</p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="settings-overlay" id="settings-overlay" onclick="toggleSettings()"></div>
+  <div class="settings-sidebar" id="settings-sidebar">
+    <div class="settings-header">
+      <h3><i class="ph-bold ph-sliders-horizontal"></i> App Settings</h3>
+      <i class="ph-bold ph-x close-settings" onclick="toggleSettings()"></i>
+    </div>
+    <div class="settings-body">
+      <div class="setting-group">
+        <label>Appearance</label>
+        <div class="theme-options">
+          <button class="theme-btn" id="btn-theme-light" onclick="setTheme('light')"><i class="ph-bold ph-sun"></i> Light</button>
+          <button class="theme-btn" id="btn-theme-dark" onclick="setTheme('dark')"><i class="ph-bold ph-moon"></i> Dark</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <label>WhatsApp Language</label>
+        <select class="settings-select" id="lang-select" onchange="setLanguage(this.value)">
+          <option value="en">English (Default)</option>
+          <option value="te">Tenglish</option>
+        </select>
+      </div>
+      <div class="setting-group" style="margin-top: 40px;">
+        <button class="btn-danger" onclick="clearAppData()"><i class="ph-bold ph-trash"></i> Clear Cart & Data</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

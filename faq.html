@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ | Sri Sai Krishna Graphics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="page-faq">
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="logo">Sri Sai Krishna Graphics</div>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="wholesale.html">Wholesale</a></li>
+        <li><a href="shop.html">Shop</a></li>
+        <li><a href="faq.html" class="active">FAQ</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="btn-icon" onclick="openAuthModal()" aria-label="Sign In"><i class="ph-bold ph-user-circle"></i></button>
+        <button class="btn-icon" onclick="toggleSettings()" aria-label="Settings"><i class="ph-bold ph-gear"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="faq-container">
+      <div class="section-header">
+        <h2>Frequently Asked Questions</h2>
+        <p>Find quick answers about our printing, framing, and wholesale orders.</p>
+      </div>
+      
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFAQ(this)">
+          How do I send my photos for printing? <i class="ph-bold ph-caret-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>After you check out via WhatsApp, please send your photos to Sagar as a <strong>Document</strong>. Normal WhatsApp photos get compressed and lose quality, which can make your prints or frames look blurry. Sending as a document keeps them crisp and clear!</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFAQ(this)">
+          How long does it take to make a custom frame or t-shirt? <i class="ph-bold ph-caret-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>For standard retail orders, printing and framing usually take 1 to 2 working days. If you are placing a large wholesale order, Sagar will give you an exact timeline on WhatsApp based on the quantity.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFAQ(this)">
+          Do you deliver outside Maripeda Bangla? <i class="ph-bold ph-caret-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>Yes! We deliver across Telangana. You can use the "Check Pincode" tool on the Shop page to verify delivery, or ask Sagar directly on WhatsApp for shipping charges.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFAQ(this)">
+          How does the 10% discount on Gift Items work? <i class="ph-bold ph-caret-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>It's simple! Any gift item you select will automatically have 10% deducted from the MRP (Maximum Retail Price) during your final checkout with Sagar.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-content">
+      <div class="brand-info">
+        <h3>Sri Sai Krishna Graphics</h3>
+        <p><strong>Location:</strong> Main road, Maripeda Bangla, Telangana</p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="settings-overlay" id="settings-overlay" onclick="toggleSettings()"></div>
+  <div class="settings-sidebar" id="settings-sidebar">
+    <div class="settings-header">
+      <h3><i class="ph-bold ph-sliders-horizontal"></i> App Settings</h3>
+      <i class="ph-bold ph-x close-settings" onclick="toggleSettings()"></i>
+    </div>
+    <div class="settings-body">
+      <div class="setting-group">
+        <label>Appearance</label>
+        <div class="theme-options">
+          <button class="theme-btn" id="btn-theme-light" onclick="setTheme('light')"><i class="ph-bold ph-sun"></i> Light</button>
+          <button class="theme-btn" id="btn-theme-dark" onclick="setTheme('dark')"><i class="ph-bold ph-moon"></i> Dark</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <label>WhatsApp Language</label>
+        <select class="settings-select" id="lang-select" onchange="setLanguage(this.value)">
+          <option value="en">English (Default)</option>
+          <option value="te">Tenglish</option>
+        </select>
+      </div>
+      <div class="setting-group" style="margin-top: 40px;">
+        <button class="btn-danger" onclick="clearAppData()"><i class="ph-bold ph-trash"></i> Clear Cart & Data</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
