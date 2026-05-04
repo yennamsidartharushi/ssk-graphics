@@ -13,38 +13,30 @@ const firebaseConfig = {
   appId: "1:1058628689901:web:232aba87b6c85d56ef91e4"
 };
 
-// Initialize Firebase
+// Initialize Firebase App, Auth, and Firestore
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 // =========================================
-// PRODUCT DATABASE
+// DYNAMIC PRODUCT DATABASE
 // =========================================
-const products = [
-  { id: "SSK-001", name: "Premium Photo Cup", category: "printing", price: 299, size: "Standard 11oz", 
-    image: "https://images.pexels.com/photos/10186985/pexels-photo-10186985.jpeg?auto=compress&cs=tinysrgb&w=800", 
-    lifestyleImage: "https://images.pexels.com/photos/10186985/pexels-photo-10186985.jpeg?auto=compress&cs=tinysrgb&w=800", 
-    description: "High-quality ceramic mug with a glossy finish. Fade-resistant printing ensures your memories last forever. Microwave and dishwasher safe, making it perfect for daily use or gifting.",
-    inStock: true 
-  },
-  { id: "SSK-002", name: "Custom Team T-Shirt", category: "printing", price: 499, size: "S, M, L, XL", 
-    image: "https://images.pexels.com/photos/4011075/pexels-photo-4011075.jpeg?auto=compress&cs=tinysrgb&w=800", 
-    lifestyleImage: "https://images.pexels.com/photos/4011075/pexels-photo-4011075.jpeg?auto=compress&cs=tinysrgb&w=800", 
-    description: "Breathable, 100% premium cotton t-shirt. Ideal for sports teams, corporate events, and daily wear. High-durability screen printing that survives multiple machine washes.",
-    inStock: true 
-  },
-  { id: "SSK-003", name: "Ornate Wooden Frame", category: "frames", price: 850, size: "Custom Sizes", 
-    image: "https://images.pexels.com/photos/1843717/pexels-photo-1843717.jpeg?auto=compress&cs=tinysrgb&w=800", 
-    lifestyleImage: "https://images.pexels.com/photos/1843717/pexels-photo-1843717.jpeg?auto=compress&cs=tinysrgb&w=800", 
-    description: "Handcrafted wooden frame with elegant vintage detailing. Includes premium clear glass to protect your photos from dust and moisture. Comes with secure wall hooks and a sturdy back stand.",
-    inStock: true 
-  },
-  { id: "SSK-004", name: "Photo Lamp (10% OFF)", category: "gifts", price: 899, size: "Personalized", 
-    image: "https://images.pexels.com/photos/10113063/pexels-photo-10113063.jpeg?auto=compress&cs=tinysrgb&w=800", 
-    lifestyleImage: "https://images.pexels.com/photos/10113063/pexels-photo-10113063.jpeg?auto=compress&cs=tinysrgb&w=800", 
-    description: "A beautiful personalized bedside lamp featuring your custom photo directly printed on the shade. Casts a warm, ambient glow across the room. Comes fully assembled with an LED bulb.",
-    inStock: true 
-  }
-];
+let products = []; // Starts empty! We will fill it from the database.
+
+// Fetch products from Firestore
+async function fetchProducts() {
+    try {
+        const snapshot = await db.collection('products').get();
+        products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Only render if we are on the shop page
+        if (document.body.id === 'page-shop') {
+            renderProducts(products);
+        }
+    } catch (error) {
+        console.error("Error fetching products:", error);
+    }
+}
 
 // =========================================
 // CART LOGIC
@@ -58,7 +50,7 @@ function renderProducts(productsToRender) {
 
   grid.innerHTML = '';
   if (productsToRender.length === 0) {
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 3rem;">No products found.</p>';
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-light); padding: 3rem;">No products available at the moment.</p>';
     return;
   }
 
@@ -157,13 +149,15 @@ function updateCartUI() {
   totalElement.innerText = `₹${totalPrice}`;
 }
 
-function checkoutWhatsApp() {
+// Check out and SAVE TO DATABASE
+async function checkoutWhatsApp() {
   if (cart.length === 0) return alert("Please add items to your cart first.");
+  
+  let grandTotal = 0;
   let message = checkoutLanguage === 'te' 
     ? "Hello Sagar anna!\n\nSri Sai Krishna Graphics nunchi ee items order cheddam anukuntunnanu:\n\n"
     : "Hello Sagar!\n\nI would like to place an order from Sri Sai Krishna Graphics:\n\n";
   
-  let grandTotal = 0;
   cart.forEach((item, index) => {
     const itemTotal = item.price * item.quantity;
     grandTotal += itemTotal;
@@ -173,8 +167,33 @@ function checkoutWhatsApp() {
   message += checkoutLanguage === 'te' 
     ? `*Total Amount: ₹${grandTotal}*\n\nPhotos/logos details chat lo share chesthanu. Please confirm!`
     : `*Estimated Grand Total: ₹${grandTotal}*\n\nI will send over my photos/logos and discuss details on chat!`;
-  
-  window.open(`https://wa.me/91${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+
+  // 1. Save the order to Firestore
+  try {
+      const orderData = {
+          items: cart,
+          totalAmount: grandTotal,
+          status: 'Pending',
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          customerEmail: auth.currentUser ? auth.currentUser.email : 'Guest'
+      };
+      
+      await db.collection('orders').add(orderData);
+      console.log("Order securely saved to database.");
+
+      // 2. Clear the cart
+      localStorage.removeItem('ssk_cart');
+      cart = [];
+      updateCartUI();
+
+      // 3. Send the user to WhatsApp
+      window.open(`https://wa.me/91${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+      toggleCart();
+
+  } catch (error) {
+      console.error("Database Error:", error);
+      alert("There was an error saving your order. Please try again.");
+  }
 }
 
 // =========================================
@@ -334,32 +353,24 @@ function openAuthModal() {
     <div class="auth-modal">
       <button class="auth-close" onclick="closeAuthModal()"><i class="ph-bold ph-x"></i></button>
       <h2 class="auth-title">Login</h2>
-      
       <div class="auth-input-group">
         <label>Email</label>
         <input type="email" id="email-input" class="auth-input" placeholder="Enter your email...">
       </div>
-      
       <div class="auth-input-group">
         <label>Password</label>
         <input type="password" id="password-input" class="auth-input" placeholder="Enter your password...">
       </div>
-      
       <div class="auth-forgot">
-  <a href="#" onclick="handleForgotPassword(); return false;">Forgot Password ?</a>
-</div>
-
+        <a href="#" onclick="handleForgotPassword(); return false;">Forgot Password ?</a>
+      </div>
       <button class="auth-btn-submit" onclick="handleEmailLogin()">Sign in</button>
-
       <div class="auth-divider">Login with social accounts</div>
-
       <div class="auth-social-icons">
         <button class="social-icon-btn" onclick="handleGoogleLogin()"><i class="ph-fill ph-google-logo"></i></button>
         <button class="social-icon-btn" onclick="handleTwitterLogin()"><i class="ph-fill ph-twitter-logo"></i></button>
         <button class="social-icon-btn" onclick="handleGithubLogin()"><i class="ph-fill ph-github-logo"></i></button>
       </div>
-
-      <p class="auth-footer-text">Don't have an account? <a href="#">Sign up</a></p>
     </div>
   `;
   setTimeout(() => modal.classList.add('show'), 10);
@@ -370,9 +381,7 @@ function closeAuthModal() {
   if (modal) modal.classList.remove('show');
 }
 
-// Listen for Authentication State Changes
-firebase.auth().onAuthStateChanged((user) => {
-    // You could update the nav icon color here to show they are logged in
+auth.onAuthStateChanged((user) => {
     if (user) {
         console.log("Logged in securely as:", user.email || user.displayName);
     } else {
@@ -384,22 +393,17 @@ function handleEmailLogin() {
   const email = document.getElementById('email-input').value;
   const password = document.getElementById('password-input').value;
 
-  if(!email || !password) {
-      alert("Please enter both email and password.");
-      return;
-  }
+  if(!email || !password) return alert("Please enter both email and password.");
 
-  // Uses your live Firebase database!
-  firebase.auth().signInWithEmailAndPassword(email, password)
-    .then((userCredential) => {
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
       alert("Successfully logged in!");
       closeAuthModal();
     })
     .catch((error) => {
-      // If the account doesn't exist, try to create it automatically for them
       if(error.code === 'auth/user-not-found') {
-          if(confirm("Account not found. Would you like to create a new one with this email and password?")) {
-              firebase.auth().createUserWithEmailAndPassword(email, password)
+          if(confirm("Account not found. Would you like to create a new one?")) {
+              auth.createUserWithEmailAndPassword(email, password)
                 .then(() => {
                     alert("Account created and logged in!");
                     closeAuthModal();
@@ -412,23 +416,29 @@ function handleEmailLogin() {
     });
 }
 
-function handleGoogleLogin() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider)
-    .then((result) => {
-        alert("Welcome, " + result.user.displayName + "!");
+function handleForgotPassword() {
+  const email = document.getElementById('email-input').value;
+  if (!email) return alert("Please enter your email address in the box first.");
+  
+  auth.sendPasswordResetEmail(email)
+    .then(() => {
+        alert("Password reset link sent! Check your inbox.");
         closeAuthModal();
     })
+    .catch((error) => alert("Error: " + error.message));
+}
+
+function handleGoogleLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(() => closeAuthModal())
     .catch(err => alert("Google Login Error: " + err.message));
 }
 
 function handleGithubLogin() {
   const provider = new firebase.auth.GithubAuthProvider();
-  firebase.auth().signInWithPopup(provider)
-    .then((result) => {
-        alert("Welcome back!");
-        closeAuthModal();
-    })
+  auth.signInWithPopup(provider)
+    .then(() => closeAuthModal())
     .catch(err => alert("GitHub Login Error: " + err.message));
 }
 
@@ -441,33 +451,6 @@ function handleTwitterLogin() {
 // =========================================
 document.addEventListener('DOMContentLoaded', () => {
   applySavedSettings();
-  if (document.body.id === 'page-shop') renderProducts(products); 
+  fetchProducts(); // Pulls live products from database!
   updateCartUI();
 });
-// =========================================
-// FORGOT PASSWORD LOGIC
-// =========================================
-function handleForgotPassword() {
-  const email = document.getElementById('email-input').value;
-
-  // Check if they typed an email first
-  if (!email) {
-      alert("Please enter your email address in the Username/Email box first, then click 'Forgot Password'.");
-      return;
-  }
-
-  // Ask Firebase to send the reset email
-  firebase.auth().sendPasswordResetEmail(email)
-    .then(() => {
-        alert("Password reset link sent! Please check your email inbox (and spam folder).");
-        closeAuthModal(); // Close the modal
-    })
-    .catch((error) => {
-        // If the email isn't registered yet, Firebase will tell them
-        if (error.code === 'auth/user-not-found') {
-            alert("No account found with that email address. Please sign up first.");
-        } else {
-            alert("Error: " + error.message);
-        }
-    });
-}
